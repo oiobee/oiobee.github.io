@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="oiobee">
+  <meta name="keywords" content="">
+  <title>Java对象的创建过程、内存布局、访问定位 - oiobee&#39;Blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.4.0/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.6","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true},"lazyload":{"enable":true,"onlypost":false},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Oiobee</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/2.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Java对象的创建过程、内存布局、访问定位">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2019-12-16 17:07" pubdate>
+        2019年12月16日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.4k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      25
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Java对象的创建过程、内存布局、访问定位</h1>
+            
+            <div class="markdown-body">
+              <hr>
+<h1 id="1-Java对象的创建过程"><a href="#1-Java对象的创建过程" class="headerlink" title="1. Java对象的创建过程"></a>1. Java对象的创建过程</h1><p><img src="https://img-blog.csdnimg.cn/20200506215302277.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RheGlvbmdfdA==,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" alt="Java对象的创建过程"></p>
+<h2 id="1-1-步骤一：类加载检查"><a href="#1-1-步骤一：类加载检查" class="headerlink" title="1.1 步骤一：类加载检查"></a>1.1 步骤一：类加载检查</h2><p>当Java虚拟机遇到一条字节码new指令时，首先将去<strong>检查这个指令的参数是否能在常量池中定位到一个类的符号引用，并检查这个符号引用代表的类是否已被加载、解析和被初始化过</strong>。如果没有，那必须先执行相应的类加载过程</p>
+<h2 id="1-2-步骤二：为新生对象分配内存"><a href="#1-2-步骤二：为新生对象分配内存" class="headerlink" title="1.2 步骤二：为新生对象分配内存"></a>1.2 步骤二：为新生对象分配内存</h2><p>对象所需要内存的大小，在类加载完成后便可以完全确定，为对象分配空间的任务实际上便等同于<strong>把一块确定大小的内存从Java堆中划分出来</strong>。</p>
+<h3 id="1-2-1-内存分配的两种方式"><a href="#1-2-1-内存分配的两种方式" class="headerlink" title="1.2.1 内存分配的两种方式"></a>1.2.1 内存分配的两种方式</h3><h4 id="1-2-1-1-指针碰撞（Bump-The-Pointer）"><a href="#1-2-1-1-指针碰撞（Bump-The-Pointer）" class="headerlink" title="1.2.1.1 指针碰撞（Bump The Pointer）"></a>1.2.1.1 指针碰撞（Bump The Pointer）</h4><p>假设<strong>Java堆中内存是绝对规整的</strong>，所有被<strong>使用过的内存都被放到一边，空闲的内存被放在另一边</strong>，中间<strong>放置一个指针作为分界点的指示器</strong>，那所分配内存就仅仅是<strong>把那个指针向空闲方向挪动一段于对象大小相等的距离</strong>。</p>
+<p>图示：<br><img src="https://img-blog.csdnimg.cn/20200501151638199.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RheGlvbmdfdA==,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" alt="指针碰撞"></p>
+<h4 id="1-2-1-2-空闲列表（Free-List）"><a href="#1-2-1-2-空闲列表（Free-List）" class="headerlink" title="1.2.1.2 空闲列表（Free List）"></a>1.2.1.2 空闲列表（Free List）</h4><p>如果<strong>Java堆中的内存并不是规整的，已被使用的内存和空闲的内存相互交错在一起</strong>，那就没有办法简单的进行指针碰撞了，虚拟机就必须<strong>维护一个列表，记录上那些内存是可用的，再分配的时候从列表中找到一块足够大的空间划分给对象实例，并更新列表上的记录</strong>。</p>
+<p>图示：<br><img src="https://img-blog.csdnimg.cn/20200501152226106.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RheGlvbmdfdA==,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" alt="空闲列表"></p>
+<h4 id="1-2-1-3-选择哪种分配方式"><a href="#1-2-1-3-选择哪种分配方式" class="headerlink" title="1.2.1.3 选择哪种分配方式"></a>1.2.1.3 选择哪种分配方式</h4><p>由<strong>Java堆是否规整决定</strong>，而<strong>Java堆是否规整由所采用的垃圾收集器是否带有空间压缩整理（Compact）决定</strong>。因此当使用Serial、ParNew等带压缩整理过程的收集器是，系统采用分配算法是指针碰撞，即简单有高效；而当使用CMS这种基于清理（Sweep）算法的收集器时，理论上就只能采用较为复杂的空间列表来分配内存</p>
+<h3 id="1-2-2-内存分配并发情况下的问题"><a href="#1-2-2-内存分配并发情况下的问题" class="headerlink" title="1.2.2 内存分配并发情况下的问题"></a>1.2.2 内存分配并发情况下的问题</h3><p>由于对象创建在虚拟机中是非常频繁的行为，即使仅仅修改一个指针所指向的位置，在并发的情况下也并不是线程安全的，可能出现长在给A对象分配内存，指针还没来得及修改，对象B又同时使用了原来的指针来分配内存的情况</p>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><h5 id="1-2-2-1-CAS-失败重试"><a href="#1-2-2-1-CAS-失败重试" class="headerlink" title="1.2.2.1 CAS+失败重试"></a>1.2.2.1 CAS+失败重试</h5><p>对分配内存空间的动作进行同步处理——实际上虚拟机是采用CAS+失败重试的方案保证更新操作的原子性</p>
+<h5 id="1-2-2-2-TLAB-（CAS-失败重试）"><a href="#1-2-2-2-TLAB-（CAS-失败重试）" class="headerlink" title="1.2.2.2 TLAB+（CAS+失败重试）"></a>1.2.2.2 TLAB+（CAS+失败重试）</h5><p><strong>把内存分配的动作按照线程划分在不同的空间之中进行</strong>，即每个线程在Java堆中预先分配一小块内存，称为本地线程分配缓冲（Thread Local Allocation Buffer，TLAB），哪个线程要分配内存，就在哪个线程的本地缓冲区中分配，只有本地缓冲区用完了，分配新的缓存区是才需要同步锁定，可以<strong>通过 -XX:+/-UseTLAB参数来设定虚拟机是否使用TLAB</strong></p>
+<h2 id="1-3-步骤三：将分配到的内存空间（不包含对象头）初始化为零值"><a href="#1-3-步骤三：将分配到的内存空间（不包含对象头）初始化为零值" class="headerlink" title="1.3 步骤三：将分配到的内存空间（不包含对象头）初始化为零值"></a>1.3 步骤三：将分配到的内存空间（不包含对象头）初始化为零值</h2><p>虚拟据必须将分配到的内存空间（不包含对象头）初始化为零值，如果使用了TLAB的话，这一项工作也可以提前到TLAB分配时顺便进行。<br>这步操作保证了对象的实例字段在Java代码中可以不赋初始值就直接使用，使程序能访问到这些字段数据类型所对应的零值。</p>
+<h2 id="1-4-步骤四：虚拟据对对象进行必要设置（对象头设置）"><a href="#1-4-步骤四：虚拟据对对象进行必要设置（对象头设置）" class="headerlink" title="1.4 步骤四：虚拟据对对象进行必要设置（对象头设置）"></a>1.4 步骤四：虚拟据对对象进行必要设置（对象头设置）</h2><p>虚拟机对对象进行必要设置，例如这个对象是那个类的实例，如何能找到类的元数据信息，对象的哈希码（实际上对象的哈希码会延后到调用Object::hashCode()方法时才计算）、对象的GC分代年龄等信息，这些信息都存放在对象的对象头（Object Header）中</p>
+<h2 id="1-5-步骤五：-执行Class文件中的init-方法"><a href="#1-5-步骤五：-执行Class文件中的init-方法" class="headerlink" title="1.5 步骤五： 执行Class文件中的init() 方法"></a>1.5 步骤五： 执行Class文件中的init() 方法</h2><p>经过以上4步以后，从虚拟机的角度来看，一个新的对象已经产生了。但对于我们的程序来说，对象的创建才刚刚开始——构造函数，即Class文件中的<code>&lt;init&gt;() </code>方法还没有执行，所有的字段都是默认的零值，对象所需要的其他资源和状态信息并没有按照我们的预定意愿构造好。<br>new指令之后会接着执行<code>&lt;init&gt;() </code>方法，按照我们的意愿对对象进行初始化，这样一个真正可用的对象才算完全被构造出来。</p>
+<hr>
+<h1 id="2-对象的内存布局"><a href="#2-对象的内存布局" class="headerlink" title="2 对象的内存布局"></a>2 对象的内存布局</h1><p>在HotSpot虚拟机中，对象在堆内存中的存储布局可以划分为三个部分：<strong>对象头（Header）、实例数据（Instance Data）和对齐填充（Padding）</strong><br><img src="https://img-blog.csdnimg.cn/20200506213744603.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RheGlvbmdfdA==,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" alt="对象的内存布局"></p>
+<h2 id="2-1-对象头（Header）"><a href="#2-1-对象头（Header）" class="headerlink" title="2.1 对象头（Header）"></a>2.1 对象头（Header）</h2><p>包含两部分：</p>
+<ul>
+<li><strong>Mark Word 存储对象自身的运行时数据</strong><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> 如哈希码（HashCode）、GC分代年龄、锁状态标识、线程持有的锁、偏向线程ID、偏向时间戳等<br><span class="hljs-bullet">2.</span> Mark Word被设计成一个有这动态定义的数据结构，以便在极小的空间内存储尽量夺得数据，<br>   根据对象的状态复用自己的存储空间<br></code></pre></td></tr></table></figure></li>
+<li><strong>类型指针（class pointer）</strong><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> 对象指向它的类元数据的指针<br><span class="hljs-bullet">2.</span> Java虚拟机通过这个指针来确定这个对象是哪个类的实例<br></code></pre></td></tr></table></figure></li>
+<li><strong>注意对象是数组的情况</strong><br>如果对象 是 数组，那么在对象头中还必须有一块用于记录数组长度的数据<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">  因为虚拟机可以通过普通<span class="hljs-keyword">Java对象的元数据信息确定对象的大小，但如果数组的长度是不确定的，将</span><br><span class="hljs-keyword">无法通过元数据中的信息推断出数组的大小。</span><br></code></pre></td></tr></table></figure>
+<h2 id="2-2-实例数据（Instance-Data）"><a href="#2-2-实例数据（Instance-Data）" class="headerlink" title="2.2 实例数据（Instance Data）"></a>2.2 实例数据（Instance Data）</h2></li>
+<li>这部分是对象真正存储的有效信息<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs css">程序代码里定义的给各类类型的字段内容（无论是继承与父类，还是子类中的定义字段）<br>这部分数据的存储顺序会受到虚拟机分配参数（<span class="hljs-selector-tag">-XX</span><span class="hljs-selector-pseudo">:FieldAllocationStyle</span>）和字段在<span class="hljs-selector-tag">Java</span>源码中定义顺序的影响。<br></code></pre></td></tr></table></figure></li>
+<li>HotSpot虚拟机默认的的分配顺序<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs angelscript">longs/<span class="hljs-built_in">double</span>s、<span class="hljs-built_in">int</span>s、shorts/chars、bytes/<span class="hljs-built_in">bool</span>eans、oop(Ordinary Object Pointers)<br>从分配策略中可以看出，相同宽度的字段总是被分配到一起<br>在满足这个前提的条件下，父类中定义的变量会出现在子类之前<br></code></pre></td></tr></table></figure></li>
+<li>如果 虚拟机的+XX:CompactFields 参数值为true，那么子类之中较窄的变量也可能会插入到父类变量的空隙之中。<h2 id="2-3-对齐填充（Padding）区域"><a href="#2-3-对齐填充（Padding）区域" class="headerlink" title="2.3 对齐填充（Padding）区域"></a>2.3 对齐填充（Padding）区域</h2></li>
+<li>这并不是必然存在的，也没有特殊的含义，仅仅起着<strong>占位符的作用</strong></li>
+<li>因为HotSpot VM的要求对象起始地址必须是8字节的整数倍，且对象头部分正好是8字节的倍数。所以，当对象实例数据部分没有对齐时（即对象的大小不是8字节的整数倍），就需要通过对齐填充来补全。</li>
+</ul>
+<hr>
+<h1 id="3-对象的访问定位"><a href="#3-对象的访问定位" class="headerlink" title="3 对象的访问定位"></a>3 对象的访问定位</h1><ul>
+<li>我们创建对象自然是为了使用该对象，实际上就是访问<strong>对象类型数据 &amp; 对象实例数据</strong></li>
+<li>Java程序 通过 栈上的引用类型数据（reference） 来访问Java堆上的对象，由于引用类型数据（reference）在 Java虚拟机中只规定了一个指向对象的引用，但没定义该引用应该通过何种方式去定位、访问堆中的对象的具体位置所以对象访问方式取决于虚拟机实现。目前主流的对象访问方式有两种：<strong>句柄访问和直接指针访问</strong>。</li>
+</ul>
+<h2 id="3-1-使用句柄访问"><a href="#3-1-使用句柄访问" class="headerlink" title="3.1 使用句柄访问"></a>3.1 使用句柄访问</h2><p>Java堆中将可能会划分出一块内存来作为句柄池，reference中存储的就是对象的句柄地址，而句柄中包含了对象实例数据与类型数据各自具体的地址信息。<br><img src="https://img-blog.csdnimg.cn/20200506224805750.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RheGlvbmdfdA==,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" alt="使用句柄访问"></p>
+<h3 id="3-1-1-优势"><a href="#3-1-1-优势" class="headerlink" title="3.1.1 优势"></a>3.1.1 优势</h3><ul>
+<li>reference中存储的是稳定的句柄地址</li>
+<li>在对象被移动时只会改变句柄中的实例数据指针，而reference本身不需要修改</li>
+<li>垃圾收集时移动对象是非常普遍的行为<h3 id="3-1-2-使用场景"><a href="#3-1-2-使用场景" class="headerlink" title="3.1.2 使用场景"></a>3.1.2 使用场景</h3>需频繁移动对象地址<h2 id="3-2-使用直接指针访问"><a href="#3-2-使用直接指针访问" class="headerlink" title="3.2 使用直接指针访问"></a>3.2 使用直接指针访问</h2>Java堆中对象的内存布局就必须考虑如何放置访问类型的相关信息，reference中存储的直接就是对象地址，如果只是访问对象本身的话，就不需要多一次间接访问的开销。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20200506224949221.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RheGlvbmdfdA==,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" alt="使用直接指针访问"></p>
+<h3 id="3-2-1优势"><a href="#3-2-1优势" class="headerlink" title="3.2.1优势"></a>3.2.1优势</h3><ul>
+<li>速度更快，它节省了一次指针定位的时间开销<h3 id="3-2-3-使用场景"><a href="#3-2-3-使用场景" class="headerlink" title="3.2.3 使用场景"></a>3.2.3 使用场景</h3>需频繁访问对象<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1>本内容基本来自《深入理解Java虚拟机》第三版  –周志明。</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/JVM/">JVM</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2019/12/15/jvm/JVM%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">
+                        <span class="hidden-mobile">JVM内存结构</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":200})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.0/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.0/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

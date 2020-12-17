@@ -177,17 +177,19 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2020/12/16/hello-world/">Hello World</a>
+        <a href="/2019/12/16/jvm/Java%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B%E3%80%81%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E3%80%81%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D/">Java对象的创建过程、内存布局、访问定位</a>
       </h1>
 
       <p class="index-excerpt">
-        <a href="/2020/12/16/hello-world/">
+        <a href="/2019/12/16/jvm/Java%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B%E3%80%81%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E3%80%81%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D/">
           
           
             
           
-          Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick
+          
+1. Java对象的创建过程
+1.1 步骤一：类加载检查当Java虚拟机遇到一条字节码new指令时，首先将去检查这个指令的参数是否能在常量池中定位到一个类的符号引用，并检查这个符号引用代表的类是否已被加载、解析和被初始化过。如果没有，那必须先执行相应的类加载过程
+1.2 步骤二：为新生对象分配内存对象所需要内存的大小，在类加载完成后便可以完全确定，为对象分配空间的任务实际上便等同于把一块确定大小
         </a>
       </p>
 
@@ -195,8 +197,8 @@ Quick
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2020-12-16 22:12" pubdate>
-              2020-12-16
+            <time datetime="2019-12-16 17:07" pubdate>
+              2019-12-16
             </time>
           </div>
         
@@ -204,7 +206,55 @@ Quick
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/%E6%B5%8B%E8%AF%95/">测试</a>
+              <a href="/categories/JVM/">JVM</a>
+            
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2019/12/15/jvm/JVM%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">JVM内存结构</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2019/12/15/jvm/JVM%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">
+          
+          
+            
+          
+          什么是Java虚拟机
+Java Virtual Machine（JVM）：java虚拟机，用来保证Java语言跨平台
+
+Java虚拟机可以看做是一台抽象得计算机，如同真实的计算机那样，它有自己的指令集以及各种运行时内存区域
+
+Java虚拟机与Java语言并没有必然的联系，它只于特定的二进制文件格式（class文件格式）所关联
+
+Java虚拟机就是一个字节码翻译器，它将字节码文件翻译成各个系统对应的
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2019-12-15 22:12" pubdate>
+              2019-12-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/JVM/">JVM</a>
             
           </div>
         
@@ -212,7 +262,9 @@ Quick
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/test/">test</a>
+              <a href="/tags/JVM/">JVM</a>
+            
+              <a href="/tags/%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">内存结构</a>
             
           </div>
         
